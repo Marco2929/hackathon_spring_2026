@@ -1,4 +1,4 @@
-# AI YouTube Shorts Pipeline
+# Agents YouTube Shorts Pipeline
 
 This repository automates a full product-to-video workflow for YouTube Shorts:
 
