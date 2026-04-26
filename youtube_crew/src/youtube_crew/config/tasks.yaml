@@ -1,0 +1,113 @@
+manage_link_queue:
+  description: >
+    Schritt 1: Nutze das Tool 'get_and_complete_amazon_link'.
+    Schritt 2: Analysiere die JSON-Rückgabe.
+    - Wenn der Status 'success' ist, ist deine Aufgabe beendet. Die Extrahiert URL ist dein Output.
+    - Wenn der Status 'empty' ist, nutze das Tool 'amazon_bestseller_scraper'. 
+      Sobald dieser durchgelaufen ist, wiederhole Schritt 1, um einen nun verfügbaren Link zu holen.
+  expected_output: "Ausschließlich die nackte Amazon-URL als String."
+  agent: link_manager
+
+extract_product_data:
+  description: >
+    Nimm die URL, die dir aus dem Task 'manage_link_queue' übergeben wurde, und nutze dein Scraping-Tool, um die Produktseite vollständig auszulesen.
+    
+    Verarbeite die extrahierten Rohdaten direkt im Anschluss nach folgenden strikten Vorgaben:
+    1. Lies Titel, Preis, Produktbilder, technische Spezifikationen, Marketing-Bullet-Points und Bewertungen aus.
+    2. Bereinige die technischen Spezifikationen (Specs) von UI-Resten.
+    3. Liste alle Bullet-Points (Marketing-Versprechen) separat auf.
+    4. Extrahiere aus dem Rezensions-Dump eine Liste aller Nutzerwahrnehmungen und verknüpfe jedes Feature (z.B. Kamera, Akku, Display) mit den dazugehörigen Nutzerzitaten oder Stichpunkten.
+    5. Isoliere die KI-generierte Zusammenfassung "Die Kunden sagen", falls vorhanden.
+    6. Behalte alle Pfade zu den Produktbildern intakt.
+  expected_output: >
+    Ein hochstrukturiertes Markdown-Dokument oder JSON-Objekt, das exakt folgende Sektionen enthält:
+    - [PRODUKT_NAME & ASIN]
+    - [PREIS]
+    - [TECHNISCHE_DATEN_LISTE] (Bereinigt)
+    - [MARKETING_VERSRECHEN] (Bullet Points)
+    - [NUTZER_FEEDBACK_MATRIX] (Sortiert nach Feature: Akku, Display, Kamera, Performance, etc.)
+    - [KI_KUNDENZUSAMMENFASSUNG]
+    - [BILD_PFADE]
+  agent: data_processor
+  context: [manage_link_queue]
+
+create_shorts_script_task:
+  description: >
+    Nutze das strukturierte Dossier aus der vorherigen Aufgabe (extract_product_data),
+    um ein YouTube Shorts Skript zu schreiben.
+    Halte dich an dieses strikte Format:
+    00-03s: Der Hook (Ein krasser Fakt oder eine provokante Frage zum Produkt).
+    03-15s: Das Marketing-Versprechen (Was sagt der Hersteller?).
+    15-45s: Die Realität (Nutze das Nutzer-Feedback! Was sind die 2 größten Probleme oder Überraschungen?).
+    45-55s: Das Urteil (Kaufen oder Finger weg?).
+    55-60s: Der Loop (Beende das Video so, dass es nahtlos wieder zum Anfang passt).
+    Das Video darf unter keinen Umständen länger als 60 Sekunden sein! Halte es kurz, prägnant und spannend.
+    Zusatz: Füge [Visual]-Anweisungen ein (z.B. [Zeige Makro-Aufnahme Kamera]).
+  expected_output: >
+    Ein dynamisches Skript, das exakt auf 60 Sekunden optimiert ist.
+  agent: short_script_expert
+  context: [extract_product_data]
+
+create_tts_audio_task:
+  description: >
+    Nimm das finale Skript aus create_shorts_script_task und erstelle daraus eine
+    Voiceover-Audiodatei mit dem Edge-TTS-Tool.
+
+    Anforderungen:
+    1. Entferne Regie- und Visual-Hinweise wie [Visual] aus dem zu sprechenden Text.
+    2. Erzeuge die Audio-Datei mit Stimme de-DE-FlorianMultilingualNeural.
+    3. Speichere die Ausgabe unter output/tts/youtube_short.mp3.
+    4. Gib als Ergebnis den finalen gesprochenen Text und den absoluten/relativen Dateipfad aus.
+  expected_output: >
+    Eine bestaetigte TTS-Erzeugung mit Dateipfad (output/tts/youtube_short.mp3)
+    und dem bereinigten Narrationstext.
+  agent: tts_narration_expert
+  context: [create_shorts_script_task]
+
+generate_video_clips_task:
+  description: >
+    Deine Aufgabe ist die technische Produktion. Du erhälst ein Skript mit 6 Szenen.
+    Führe EINMAL folgende Schritte durch:
+    1. Extrahiere den visuellen Prompt.
+    2. Rufe das Tool 'ComfyUI Video Generator' auf.
+    3. Warte auf den Pfad.
+    
+    Gib immer den ersten Bildnamen als Input zum Beispiel product_image_01.jpg
+    
+    WICHTIG: Erfinde keinen Pfad. Wenn das Tool nicht aufgerufen wurde, ist der Task gescheitert.
+  expected_output: >
+    Einen Video Pfad (comfyui/mock_video.mp4)
+  agent: video_production_assistant
+  context: [create_shorts_script_task, extract_product_data]
+
+fuse_video_task:
+  description: >
+    Nimm den erzeugten Clip-Pfad aus generate_video_clips_task sowie die TTS-Ausgabe aus
+    create_tts_audio_task und erstelle daraus ein einziges finales MP4.
+
+    Anforderungen:
+    1. Verwende den generierten Clip-Pfad.
+    2. Verwende die erzeugte Audiodatei output/tts/youtube_short.mp3.
+    3. Nutze das Tool video_fusion_tool, um die Clips zu concat-en und mit Audio zu muxen.
+    4. Speichere das Ergebnis als output/final/youtube_short_final.mp4.
+    5. Gib den finalen Dateipfad als Ergebnis aus.
+
+    Wichtig: Erfinde keine Dateipfade. Wenn Pfade fehlen, melde den Fehler klar.
+  expected_output: >
+    Eine bestaetigte finale MP4-Datei mit Pfad output/final/youtube_short_final.mp4.
+  agent: fusion_agent
+  context: [generate_video_clips_task, create_tts_audio_task]
+
+upload_youtube_video_task:
+  description: >
+    Nimm das finale MP4 aus fuse_video_task und lade es auf YouTube hoch.
+
+    Anforderungen:
+    1. Verwende das YouTube Data API Upload-Tool.
+    2. Nutze den finalen Videopfad aus der Fusion.
+    3. Vergib einen passenden Titel und eine kurze Beschreibung.
+    4. Gib die bestätigte YouTube-URL aus.
+  expected_output: >
+    Eine bestaetigte YouTube-Video-URL.
+  agent: youtube_uploader_agent
+  context: [fuse_video_task, create_shorts_script_task]
