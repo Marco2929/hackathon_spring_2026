@@ -12,24 +12,36 @@ extract_product_data:
   description: >
     Nimm die URL, die dir aus dem Task 'manage_link_queue' übergeben wurde, und nutze dein Scraping-Tool, um die Produktseite vollständig auszulesen.
     
-    Verarbeite die extrahierten Rohdaten direkt im Anschluss nach folgenden strikten Vorgaben:
-    1. Lies Titel, Preis, Produktbilder, technische Spezifikationen, Marketing-Bullet-Points und Bewertungen aus.
-    2. Bereinige die technischen Spezifikationen (Specs) von UI-Resten.
-    3. Liste alle Bullet-Points (Marketing-Versprechen) separat auf.
-    4. Extrahiere aus dem Rezensions-Dump eine Liste aller Nutzerwahrnehmungen und verknüpfe jedes Feature (z.B. Kamera, Akku, Display) mit den dazugehörigen Nutzerzitaten oder Stichpunkten.
-    5. Isoliere die KI-generierte Zusammenfassung "Die Kunden sagen", falls vorhanden.
-    6. Behalte alle Pfade zu den Produktbildern intakt.
+    Verarbeite die extrahierten Rohdaten in der vom Tool gespeicherten JSON Datei direkt im Anschluss nach folgenden strikten Vorgaben:
+    1. Bereinige die Produktbeschreibung von UI-Resten.
+    2. Liste alle Bullet-Points (Marketing-Versprechen) separat auf.
+    3. Extrahiere aus dem Rezensions-Dump eine Liste aller Nutzerwahrnehmungen und verknüpfe jedes Feature (z.B. Kamera, Akku, Display) mit den dazugehörigen Nutzerzitaten oder Stichpunkten.
+    4. Isoliere die KI-generierte Zusammenfassung "Die Kunden sagen", falls vorhanden.
+    5. Behalte alle Pfade zu den Produktbildern intakt.
   expected_output: >
-    Ein hochstrukturiertes Markdown-Dokument oder JSON-Objekt, das exakt folgende Sektionen enthält:
-    - [PRODUKT_NAME & ASIN]
-    - [PREIS]
-    - [TECHNISCHE_DATEN_LISTE] (Bereinigt)
-    - [MARKETING_VERSRECHEN] (Bullet Points)
-    - [NUTZER_FEEDBACK_MATRIX] (Sortiert nach Feature: Akku, Display, Kamera, Performance, etc.)
-    - [KI_KUNDENZUSAMMENFASSUNG]
-    - [BILD_PFADE]
+    Ein strukturiertes Markdown-Dokument, das folgende Sektionen enthält:
+    - [PRODUKT_NAME & ASIN]:
+    - [PREIS]:
+    - [PRODUKTBESCHREIBUNG]:
+    - [NUTZER_FEEDBACK]:
+    - [KI_KUNDENZUSAMMENFASSUNG]:
+    - [BILD_PFADE]:
   agent: data_processor
   context: [manage_link_queue]
+
+analyze_product_task:
+  description: >
+    Du hast Zugriff auf die Bildpfade aus dem vorherigen Schritt. 
+    WICHTIG: Die Bilder befinden sich physisch im Ordner 'output/product_data/images'.
+    Stelle sicher, dass jeder Pfad, den du an das Tool übergibst, mit diesem Ordner beginnt 
+    (z.B. 'output/product_data/images/product_image_01.jpg').
+    Füge alle Pfade kommagetrennt zusammen.
+    Übergib diesen String an das Tool 'multi_image_description_tool'.
+    Analysiere die Rückgabe des Tools sorgfältig.
+  expected_output: >
+    Eine strukturierte Liste, in der jedem Dateinamen und die entsprechende visuelle Beschreibung.
+  agent: image_discription_expert
+  context: [extract_product_data]
 
 create_shorts_script_task:
   description: >
@@ -41,12 +53,38 @@ create_shorts_script_task:
     15-45s: Die Realität (Nutze das Nutzer-Feedback! Was sind die 2 größten Probleme oder Überraschungen?).
     45-55s: Das Urteil (Kaufen oder Finger weg?).
     55-60s: Der Loop (Beende das Video so, dass es nahtlos wieder zum Anfang passt).
-    Das Video darf unter keinen Umständen länger als 60 Sekunden sein! Halte es kurz, prägnant und spannend.
-    Zusatz: Füge [Visual]-Anweisungen ein (z.B. [Zeige Makro-Aufnahme Kamera]).
+    Das Skript wird im Anschluss von einem Image Generator benutzt um genau 4 Szenenbilder zu erstellen, die anschließend von einem 
+    Video Generator animiert werden. 
+    Erstelle erst eine Beschreibung für den Image Generator, damit dieser mit den Produktbildern eine gute Szene erstellen kann. 
+    Nutze dabei den Tag [SCENE:] und achte darauf das es eine stationäre Bildbeschreibung ist.
+    Du darfst selbst entscheiden welche Produktbilder du für die Szenen nutzt, aber du musst die Bildpfade aus dem Dossier verwenden. 
+    Lese dabei aus den Bildbeschreibungen, ob diese passend sind. 
+    Für den Video Generator erstelle nun eine Beschreibung, die die Szene lebendig erscheinen lässt, 
+    bitte beachte das der Video Generator nur 5 Sekunden an Videomaterial generiert und dabei das Szenebild als Start erhält, nutze hierfür den Tag [VIDEO:].
+    Der gesprochene Text darf unter keinen Umständen länger als 60 Sekunden sein! Halte es kurz, prägnant und spannend. Füge sowohl bei [SCENE:] als auch bei [VIDEO:] den Dateinamen des verwendeten Files hinzu.
   expected_output: >
-    Ein dynamisches Skript, das exakt auf 60 Sekunden optimiert ist.
+    Ein Skript, das exakt auf 60 Sekunden optimiert ist und die Pfade zu den verwendeten Produktbildern.
   agent: short_script_expert
-  context: [extract_product_data]
+  context: [extract_product_data, analyze_product_task]
+
+generate_scene_images_task:
+  description: >
+    Nimm das finale Skript aus create_shorts_script_task und extrahiere alle [SCENE:]
+    Szenenbeschreibungen. Nutze außerdem die Bilddateien. Die Bilder befinden sich physisch im Ordner 'output/product_data/images'.
+
+    Rufe das Tool 'openrouter_scene_image_generator' genau einmal auf und übergib:
+    - scene_descriptions: Scene description separiert mit Semicolons
+    - images_paths: Bildpfade separiert mit Semicolons
+
+    Anforderungen:
+    1. Erzeuge pro Szene genau ein Bild.
+    2. Speichere die Bilder unter output/scene_images/.
+    3. Erfinde keine Dateipfade.
+    4. Gib als Ergebnis eine geordnete Liste Szene -> Bildpfad zurück.
+  expected_output: >
+    Eine bestaetigte Mapping-Liste aller Szenenbilder inkl. Dateipfaden in output/scene_images/.
+  agent: scene_image_generator
+  context: [create_shorts_script_task]
 
 create_tts_audio_task:
   description: >
@@ -66,19 +104,23 @@ create_tts_audio_task:
 
 generate_video_clips_task:
   description: >
-    Deine Aufgabe ist die technische Produktion. Du erhälst ein Skript mit 6 Szenen.
-    Führe EINMAL folgende Schritte durch:
-    1. Extrahiere den visuellen Prompt.
-    2. Rufe das Tool 'ComfyUI Video Generator' auf.
-    3. Warte auf den Pfad.
-    
-    Gib immer den ersten Bildnamen als Input zum Beispiel product_image_01.jpg
-    
-    WICHTIG: Erfinde keinen Pfad. Wenn das Tool nicht aufgerufen wurde, ist der Task gescheitert.
+    Nimm das finale Skript aus create_shorts_script_task und extrahiere alle [VIDEO:]
+    Szenenbeschreibungen. Nutze außerdem die Bilddateien die von generate_scene_images_task generiert wurden. 
+    Die Bilder befinden sich physisch im Ordner 'output/scene_images'.
+
+    Rufe das Tool 'comfyui_tool' genau einmal auf und übergib:
+    - scene_descriptions: Scene description separiert mit Semicolons
+    - images_paths: Scene Bildpfade separiert mit Semicolons
+
+    Anforderungen:
+    1. Erzeuge pro Szene genau ein Video.
+    2. Speichere die Video unter output/comfyui/.
+    3. Erfinde keine Dateipfade.
+    4. Gib als Ergebnis eine geordnete Liste Szene -> Videopfade zurück.
   expected_output: >
-    Einen Video Pfad (comfyui/mock_video.mp4)
+    Eine bestaetigte Mapping-Liste aller Videos inkl. Dateipfaden in output/comfyui
   agent: video_production_assistant
-  context: [create_shorts_script_task, extract_product_data]
+  context: [create_shorts_script_task, generate_scene_images_task]
 
 fuse_video_task:
   description: >

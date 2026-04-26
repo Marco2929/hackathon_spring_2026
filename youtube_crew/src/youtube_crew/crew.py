@@ -1,7 +1,7 @@
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 import os
-from youtube_crew.tools import GetNextOpenLinkTool, AmazonBestsellerScraperTool, ComfyUIVideoTool, EdgeTTSTool, VideoFusionTool, YouTubeUploaderTool, AmazonContentScrapeTool
+from youtube_crew.tools import GetNextOpenLinkTool, AmazonBestsellerScraperTool, ComfyUIVideoTool, EdgeTTSTool, VideoFusionTool, YouTubeUploaderTool, AmazonContentScrapeTool, OpenRouterSceneImageTool, MultiImageDescriptionTool
 
 @CrewBase
 class YoutubeCrew():
@@ -32,6 +32,25 @@ class YoutubeCrew():
             verbose=True,
             llm=self.openrouter_llm,
             tools=[AmazonContentScrapeTool()],
+        )
+    
+    @agent
+    def image_discription_expert(self) -> Agent:
+        return Agent(
+            config=self.agents_config['image_discription_expert'],
+            verbose=True,
+            llm=self.openrouter_llm,
+            tools=[MultiImageDescriptionTool()],
+        )
+
+    @agent
+    def scene_image_generator(self) -> Agent:
+        return Agent(
+            config=self.agents_config['scene_image_generator'], # type: ignore[index]
+            llm=self.openrouter_llm,
+            tools=[OpenRouterSceneImageTool()],
+            verbose=True,
+            allow_delegation=False,
         )
 
     @agent
@@ -93,12 +112,26 @@ class YoutubeCrew():
             config=self.tasks_config['extract_product_data'],
             output_file='latest_product_data.md'
         )
+    
+    @task
+    def analyze_product_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['analyze_product_task'],
+            output_file='youtube_image_description.md',
+        )
 
     @task
     def create_shorts_script_task(self) -> Task:
         return Task(
             config=self.tasks_config['create_shorts_script_task'],
             output_file='youtube_short.md'
+        )
+
+    @task
+    def generate_scene_images_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['generate_scene_images_task'],
+            output_file='youtube_scene_image.md',
         )
     
 
@@ -140,7 +173,9 @@ class YoutubeCrew():
             agents=[
                 self.link_manager(),
                 self.data_processor(),
+                self.image_discription_expert(),
                 self.short_script_expert(),
+                self.scene_image_generator(),
                 self.tts_narration_expert(),
                 self.video_production_assistant(),
                 self.fusion_agent(),
@@ -149,7 +184,9 @@ class YoutubeCrew():
             tasks=[
                 self.manage_link_queue(),
                 self.extract_product_data(),
+                self.analyze_product_task(),
                 self.create_shorts_script_task(),
+                self.generate_scene_images_task(),
                 self.create_tts_audio_task(),
                 self.generate_video_clips_task(),
                 self.fuse_video_task(),

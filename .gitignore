@@ -1,6 +1,6 @@
 .env
-client_secret_899706342462-esmuel8evro677rhffh1le2b5jl6cf7n.apps.googleusercontent.com.json
 youtube_token.json
 output/
 security/youtube_token.json
 client_secret_*.json
+.vscode

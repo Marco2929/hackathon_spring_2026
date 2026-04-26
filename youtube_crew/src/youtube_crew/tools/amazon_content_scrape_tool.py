@@ -92,6 +92,38 @@ class AmazonContentScrapeTool(BaseTool):
 		return cls._clean_visible_text(summary_text)
 
 	@classmethod
+	def _extract_product_price(cls, page: Page) -> str | None:
+		price_selectors = [
+			"span.a-price.aok-align-center .a-offscreen",
+			"span.a-price .a-offscreen",
+			"#corePriceDisplay_desktop_feature_div .a-offscreen",
+			"#corePrice_feature_div .a-offscreen",
+			"#price_inside_buybox",
+			"#newBuyBoxPrice",
+		]
+
+		for selector in price_selectors:
+			locator = page.locator(selector).first
+			if locator.count() == 0:
+				continue
+			price_text = cls._clean_visible_text(locator.text_content())
+			if not price_text:
+				continue
+			if re.search(r"\d", price_text):
+				return price_text
+
+		# Fallback: build price from split whole/fraction nodes.
+		whole = cls._clean_visible_text(page.locator("span.a-price-whole").first.text_content())
+		fraction = cls._clean_visible_text(page.locator("span.a-price-fraction").first.text_content())
+		if whole and fraction:
+			whole_digits = re.sub(r"[^\d.,]", "", whole)
+			fraction_digits = re.sub(r"[^\d]", "", fraction)
+			if whole_digits and fraction_digits:
+				return f"{whole_digits},{fraction_digits}"
+
+		return None
+
+	@classmethod
 	def _download_images(cls, image_urls: list[str], image_dir: Path) -> list[dict[str, str]]:
 		image_dir.mkdir(parents=True, exist_ok=True)
 		opener = urllib.request.build_opener()
@@ -110,7 +142,7 @@ class AmazonContentScrapeTool(BaseTool):
 					{
 						"id": f"img_{idx + 1}",
 						"file_name": file_name,
-						"local_path": f"images/{file_name}",
+						"local_path": f"{file_name}",
 					}
 				)
 			except Exception:
@@ -126,6 +158,7 @@ class AmazonContentScrapeTool(BaseTool):
 		result: dict[str, object] = {
 			"title": None,
 			"asin": asin,
+			"product_price": None,
 			"product_description": None,
 			"ai_summary": None,
 			"reviews_dump": [],
@@ -154,6 +187,8 @@ class AmazonContentScrapeTool(BaseTool):
 				title_el = page.locator("span#productTitle").first
 				if title_el.count() > 0:
 					result["title"] = self._clean_visible_text(title_el.text_content())
+
+				result["product_price"] = self._extract_product_price(page)
 
 				bullet_texts = [
 					self._clean_visible_text(t)
@@ -225,10 +260,9 @@ class AmazonContentScrapeTool(BaseTool):
 			return json.dumps(
 				{
 					"status": "success",
-					"asin": asin,
 					"output_dir": str(output_dir),
 					"data_path": str(data_path),
-					"title": result.get("title"),
+					"data": result,
 					"ai_summary_found": bool(result.get("ai_summary")),
 					"review_count": len(reviews_dump),
 					"image_count": len(result.get("images", [])),
