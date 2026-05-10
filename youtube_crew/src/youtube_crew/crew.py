@@ -1,7 +1,7 @@
 from crewai import Agent, Crew, LLM, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 import os
-from youtube_crew.tools import GetNextOpenLinkTool, AmazonBestsellerScraperTool, ComfyUIVideoTool, EdgeTTSTool, VideoFusionTool, YouTubeUploaderTool, AmazonContentScrapeTool, OpenRouterSceneImageTool, MultiImageDescriptionTool
+from youtube_crew.tools import GetNextOpenLinkTool, AmazonBestsellerScraperTool, TTSTool, VideoTool, VideoFusionTool, YouTubeUploaderTool, AmazonContentScrapeTool, OpenRouterSceneImageTool, MultiImageDescriptionTool
 
 @CrewBase
 class YoutubeCrew():
@@ -11,7 +11,7 @@ class YoutubeCrew():
     tasks: list[Task]
 
     openrouter_llm = LLM(
-        model="openrouter/google/gemini-2.0-flash-lite-001",
+        model="openrouter/google/gemini-2.5-flash",
         base_url="https://openrouter.ai/api/v1",
         api_key=os.getenv("OPENROUTER_API_KEY"),
     )
@@ -66,7 +66,7 @@ class YoutubeCrew():
         return Agent(
             config=self.agents_config['tts_narration_expert'],
             llm=self.openrouter_llm,
-            tools=[EdgeTTSTool()],
+            tools=[TTSTool()],
             verbose=True,
         )
     
@@ -75,7 +75,7 @@ class YoutubeCrew():
         return Agent(
             config=self.agents_config['video_production_assistant'],
             llm=self.openrouter_llm,
-            tools=[ComfyUIVideoTool()],
+            tools=[VideoTool()],
             verbose=True,
             allow_delegation=False
         )

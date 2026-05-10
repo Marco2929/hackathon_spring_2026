@@ -13,13 +13,13 @@ class MultiImageDescriptionTool(BaseTool):
         "getrennt durch Kommas (z.B. 'pfad1.jpg, pfad2.jpg')."
     )
 
-    def _run(self, image_paths: str) -> str: # Typ auf str geändert für CrewAI Kompatibilität
+    def _run(self, image_paths: str) -> str:
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=os.getenv("OPENROUTER_API_KEY"),
         )
         
-        # String in Liste umwandeln
+
         paths = [p.strip() for p in image_paths.split(",")]
         results = []
         
@@ -30,7 +30,7 @@ class MultiImageDescriptionTool(BaseTool):
                     b64 = base64.b64encode(f.read()).decode('utf-8')
                 
                 response = client.chat.completions.create(
-                    model="google/gemini-2.0-flash-lite-001",
+                    model="google/gemini-2.5-flash",
                     messages=[{
                         "role": "user",
                         "content": [

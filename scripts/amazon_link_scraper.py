@@ -31,7 +31,6 @@ def save_link(link: str, tag: str = "open") -> bool:
         conn.close()
         return True
     except sqlite3.IntegrityError:
-        # Greift, falls der Link aufgrund des UNIQUE Constraints abgelehnt wird
         return False
 
 def scrape_and_store():

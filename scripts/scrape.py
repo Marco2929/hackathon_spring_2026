@@ -163,7 +163,6 @@ def scrape_amazon_dump(url):
                 page.evaluate(f"window.scrollTo(0, document.body.scrollHeight * {i/5});")
                 time.sleep(1)
 
-            # KI-Zusammenfassung (falls vorhanden)
             print("[*] Suche nach KI-Zusammenfassung...")
             try:
                 page.wait_for_selector("span[data-testid='aspect-summary']", timeout=10000)
@@ -171,7 +170,6 @@ def scrape_amazon_dump(url):
                 pass
             result["ai_summary"] = extract_ai_summary_text(page)
 
-            # "Weiterlesen" anklicken
             print("[*] Klappe Rezensionstexte auf...")
             expanders = page.locator("[data-hook='review-body-expander']").all()
             for btn in expanders:
@@ -181,7 +179,6 @@ def scrape_amazon_dump(url):
                         time.sleep(0.3)
                 except: pass
 
-            # ROBUST DUMP: Holt einfach den inneren Text des gesamten Blocks
             print("[*] Erstelle Text-Dump der Rezensionen...")
             review_elements = page.locator("[data-hook='review']").all()
             for rev in review_elements:

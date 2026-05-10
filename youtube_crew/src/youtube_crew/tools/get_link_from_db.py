@@ -24,14 +24,14 @@ class GetNextOpenLinkTool(BaseTool):
             conn = sqlite3.connect("/home/mm/dev/git/hackathon_spring_2026/amazon_links_db/amazon_products.db")
             cursor = conn.cursor()
             
-            # Suche nach dem ältesten offenen Link
+
             cursor.execute("SELECT id, link FROM product_links WHERE tag = 'open' LIMIT 1")
             row = cursor.fetchone()
             
             if row:
                 link_id, link_url = row
                 
-                # Den Status sofort und final auf 'completed' setzen
+
                 cursor.execute("UPDATE product_links SET tag = 'completed' WHERE id = ?", (link_id,))
                 conn.commit()
                 conn.close()

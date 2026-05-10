@@ -88,7 +88,6 @@ def wait_for_job_completion(prompt_id):
                 
                 outputs = history_data[prompt_id].get("outputs", {})
                 
-                # Wir durchsuchen alle Nodes nach unserem Video
                 for node_id, node_output in outputs.items():
                     for media_key in ["videos", "images", "gifs"]:
                         if media_key in node_output:
@@ -110,7 +109,6 @@ def generate_video(prompt_text, local_image_path):
     if not uploaded_filename:
         return None
 
-    # HIER ANGEPASST: Neue smol JSON laden
     try:
         with open("/home/mm/dev/git/hackathon_spring_2026/YouTube_gen_smol.json", "r", encoding="utf-8") as f:
             workflow = json.load(f)
@@ -118,7 +116,6 @@ def generate_video(prompt_text, local_image_path):
         print("❌ Abbruch: Datei 'YouTube_gen_smol.json' nicht gefunden.")
         return None
 
-    # HIER ANGEPASST: Die neuen Node-IDs für Text und Image aus deinem Workflow
     try:
         workflow["6"]["inputs"]["text"] = prompt_text
         workflow["56"]["inputs"]["image"] = uploaded_filename
@@ -132,7 +129,6 @@ def generate_video(prompt_text, local_image_path):
     
     req = urllib.request.Request(url, data=data)
     
-    # HIER ANGEPASST: Sicherheits-Header gesetzt
     req.add_header('Content-Type', 'application/json')
     req.add_header('Accept', 'application/json')
     
@@ -142,7 +138,6 @@ def generate_video(prompt_text, local_image_path):
         prompt_id = result['prompt_id']
         print(f"✅ Video-Job in Warteschlange eingereiht! Prompt_ID: {prompt_id}")
         
-        # Warten und Metadaten abfangen
         video_metadata = wait_for_job_completion(prompt_id)
         
         if video_metadata:
@@ -157,7 +152,6 @@ def generate_video(prompt_text, local_image_path):
             print("❌ Kein Video-Output in der History gefunden.")
             return None
             
-    # HIER ANGEPASST: Fehler sauber abfangen, falls ComfyUI meckert
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8')
         print(f"\n🚨 KRITISCHER API-FEHLER: HTTP {e.code} - {error_body}\n")

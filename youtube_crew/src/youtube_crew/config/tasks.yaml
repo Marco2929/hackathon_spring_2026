@@ -1,155 +1,162 @@
 manage_link_queue:
   description: >
-    Schritt 1: Nutze das Tool 'get_and_complete_amazon_link'.
-    Schritt 2: Analysiere die JSON-Rückgabe.
-    - Wenn der Status 'success' ist, ist deine Aufgabe beendet. Die Extrahiert URL ist dein Output.
-    - Wenn der Status 'empty' ist, nutze das Tool 'amazon_bestseller_scraper'. 
-      Sobald dieser durchgelaufen ist, wiederhole Schritt 1, um einen nun verfügbaren Link zu holen.
-  expected_output: "Ausschließlich die nackte Amazon-URL als String."
+    Step 1: Use the tool 'get_and_complete_amazon_link'.
+    Step 2: Analyze the JSON return.
+    - If the status is 'success', your task is finished. The extracted URL is your output.
+    - If the status is 'empty', use the tool 'amazon_bestseller_scraper'. 
+      As soon as it has finished running, repeat Step 1 to fetch a now available link.
+  expected_output: "Exclusively the bare Amazon URL as a string."
   agent: link_manager
 
 extract_product_data:
   description: >
-    Nimm die URL, die dir aus dem Task 'manage_link_queue' übergeben wurde, und nutze dein Scraping-Tool, um die Produktseite vollständig auszulesen.
+    Take the URL passed to you from the 'manage_link_queue' task and use your scraping tool to fully read the product page.
     
-    Verarbeite die extrahierten Rohdaten in der vom Tool gespeicherten JSON Datei direkt im Anschluss nach folgenden strikten Vorgaben:
-    1. Bereinige die Produktbeschreibung von UI-Resten.
-    2. Liste alle Bullet-Points (Marketing-Versprechen) separat auf.
-    3. Extrahiere aus dem Rezensions-Dump eine Liste aller Nutzerwahrnehmungen und verknüpfe jedes Feature (z.B. Kamera, Akku, Display) mit den dazugehörigen Nutzerzitaten oder Stichpunkten.
-    4. Isoliere die KI-generierte Zusammenfassung "Die Kunden sagen", falls vorhanden.
-    5. Behalte alle Pfade zu den Produktbildern intakt.
+    Process the extracted raw data directly afterward in the JSON file saved by the tool according to the following strict guidelines:
+    1. Clean the product description of UI remnants.
+    2. List all bullet points (marketing promises) separately.
+    3. Extract a list of all user perceptions from the review dump and link each feature (e.g., camera, battery, display) with the corresponding user quotes or bullet points.
+    4. Isolate the AI-generated summary "Customers say", if present.
+    5. Keep all paths to the product images intact.
   expected_output: >
-    Ein strukturiertes Markdown-Dokument, das folgende Sektionen enthält:
-    - [PRODUKT_NAME & ASIN]:
-    - [PREIS]:
-    - [PRODUKTBESCHREIBUNG]:
-    - [NUTZER_FEEDBACK]:
-    - [KI_KUNDENZUSAMMENFASSUNG]:
-    - [BILD_PFADE]:
+    A structured Markdown document containing the following sections:
+    - [PRODUCT_NAME & ASIN]:
+    - [PRICE]:
+    - [PRODUCT_DESCRIPTION]:
+    - [USER_FEEDBACK]:
+    - [AI_CUSTOMER_SUMMARY]:
+    - [IMAGE_PATHS]:
   agent: data_processor
   context: [manage_link_queue]
 
 analyze_product_task:
   description: >
-    Du hast Zugriff auf die Bildpfade aus dem vorherigen Schritt. 
-    WICHTIG: Die Bilder befinden sich physisch im Ordner 'output/product_data/images'.
-    Stelle sicher, dass jeder Pfad, den du an das Tool übergibst, mit diesem Ordner beginnt 
-    (z.B. 'output/product_data/images/product_image_01.jpg').
-    Füge alle Pfade kommagetrennt zusammen.
-    Übergib diesen String an das Tool 'multi_image_description_tool'.
-    Analysiere die Rückgabe des Tools sorgfältig.
+    You have access to the image paths from the previous step. 
+    IMPORTANT: The images are physically located in the folder 'output/product_data/images'.
+    Ensure that every path you pass to the tool starts with this folder 
+    (e.g., 'output/product_data/images/product_image_01.jpg').
+    Merge all paths together, separated by commas.
+    Pass this string to the tool 'multi_image_description_tool'.
+    Carefully analyze the return of the tool.
   expected_output: >
-    Eine strukturierte Liste, in der jedem Dateinamen und die entsprechende visuelle Beschreibung.
+    A structured list containing each file name and the corresponding visual description.
   agent: image_discription_expert
   context: [extract_product_data]
 
 create_shorts_script_task:
   description: >
-    Nutze das strukturierte Dossier aus der vorherigen Aufgabe (extract_product_data),
-    um ein YouTube Shorts Skript zu schreiben.
-    Halte dich an dieses strikte Format:
-    00-03s: Der Hook (Ein krasser Fakt oder eine provokante Frage zum Produkt).
-    03-15s: Das Marketing-Versprechen (Was sagt der Hersteller?).
-    15-45s: Die Realität (Nutze das Nutzer-Feedback! Was sind die 2 größten Probleme oder Überraschungen?).
-    45-55s: Das Urteil (Kaufen oder Finger weg?).
-    55-60s: Der Loop (Beende das Video so, dass es nahtlos wieder zum Anfang passt).
-    Das Skript wird im Anschluss von einem Image Generator benutzt um genau 4 Szenenbilder zu erstellen, die anschließend von einem 
-    Video Generator animiert werden. 
-    Erstelle erst eine Beschreibung für den Image Generator, damit dieser mit den Produktbildern eine gute Szene erstellen kann. 
-    Nutze dabei den Tag [SCENE:] und achte darauf das es eine stationäre Bildbeschreibung ist.
-    Du darfst selbst entscheiden welche Produktbilder du für die Szenen nutzt, aber du musst die Bildpfade aus dem Dossier verwenden. 
-    Lese dabei aus den Bildbeschreibungen, ob diese passend sind. 
-    Für den Video Generator erstelle nun eine Beschreibung, die die Szene lebendig erscheinen lässt, 
-    bitte beachte das der Video Generator nur 5 Sekunden an Videomaterial generiert und dabei das Szenebild als Start erhält, nutze hierfür den Tag [VIDEO:].
-    Der gesprochene Text darf unter keinen Umständen länger als 60 Sekunden sein! Halte es kurz, prägnant und spannend. Füge sowohl bei [SCENE:] als auch bei [VIDEO:] den Dateinamen des verwendeten Files hinzu.
+    Use the structured dossier from the previous task (extract_product_data)
+    to write a YouTube Shorts script in English.
+    Adhere to this strict format:
+    00-03s: The Hook (A striking fact or a provocative question about the product).
+    03-15s: The Marketing Promise (What does the manufacturer say?).
+    15-45s: The Reality (Use the user feedback! What are the 2 biggest problems or surprises?).
+    45-55s: The Verdict (Buy or stay away?).
+    55-60s: The Loop (End the video so that it seamlessly fits back to the beginning).
+    
+    The script is subsequently used by an image generator to create exactly 4 scene images, which are then animated by a video generator. 
+    
+    CRITICAL INSTRUCTIONS FOR IMAGE GENERATION ([SCENE:]):
+    First, create a description for the image generator so that it can create a good scene using the product images. 
+    Use the tag [SCENE:] and ensure that it is a purely stationary, visual image description, use english for it.
+    CRITICAL: The [SCENE:] prompt MUST NOT contain any spoken text, narration, dialogue, or marketing slogans. It must be a highly descriptive, purely visual setup (e.g., "A clean, photorealistic product shot of a black tablet lying flat on a wooden desk, studio lighting, 8k resolution, highly detailed, NO text, NO watermarks"). You MUST explicitly instruct the image generator to avoid generating any text, letters, or UI overlays.
+    
+    You may decide for yourself which product images you use for the scenes, but you must use the image paths from the dossier. 
+    Read from the image descriptions to see if they are suitable. 
+    
+    INSTRUCTIONS FOR VIDEO GENERATION ([VIDEO:]):
+    For the video generator, now create a description in english that makes the scene appear alive;
+    please note that the video generator only generates 5 seconds of video material and receives the scene image as a starting point, use the tag [VIDEO:] for this. Focus purely on subtle motions (e.g., "camera slowly pans right, dynamic reflections move across the screen").
+    
+    The spoken text must under no circumstances be longer than 60 seconds! Keep it short, concise, and exciting. Include the file name of the used file for both [SCENE:] and [VIDEO:].
   expected_output: >
-    Ein Skript, das exakt auf 60 Sekunden optimiert ist und die Pfade zu den verwendeten Produktbildern.
+    A script optimized for exactly 60 seconds with completely text-free visual scene descriptions, animation instructions, and the paths to the product images used.
   agent: short_script_expert
   context: [extract_product_data, analyze_product_task]
 
 generate_scene_images_task:
   description: >
-    Nimm das finale Skript aus create_shorts_script_task und extrahiere alle [SCENE:]
-    Szenenbeschreibungen. Nutze außerdem die Bilddateien. Die Bilder befinden sich physisch im Ordner 'output/product_data/images'.
+    Take the final script from create_shorts_script_task and extract all [SCENE:]
+    scene descriptions. Also use the image files. The images are physically located in the folder 'output/product_data/images'.
 
-    Rufe das Tool 'openrouter_scene_image_generator' genau einmal auf und übergib:
-    - scene_descriptions: Scene description separiert mit Semicolons
-    - images_paths: Bildpfade separiert mit Semicolons
+    Call the tool 'openrouter_scene_image_generator' exactly once and pass:
+    - scene_descriptions: Scene descriptions separated by semicolons
+    - images_paths: Image paths separated by semicolons
 
-    Anforderungen:
-    1. Erzeuge pro Szene genau ein Bild.
-    2. Speichere die Bilder unter output/scene_images/.
-    3. Erfinde keine Dateipfade.
-    4. Gib als Ergebnis eine geordnete Liste Szene -> Bildpfad zurück.
+    Requirements:
+    1. Generate exactly one image per scene.
+    2. Save the images under output/scene_images/.
+    3. Do not invent file paths.
+    4. Return an ordered list mapping scene -> image path as the result.
   expected_output: >
-    Eine bestaetigte Mapping-Liste aller Szenenbilder inkl. Dateipfaden in output/scene_images/.
+    A confirmed mapping list of all scene images incl. file paths in output/scene_images/.
   agent: scene_image_generator
   context: [create_shorts_script_task]
 
 create_tts_audio_task:
   description: >
-    Nimm das finale Skript aus create_shorts_script_task und erstelle daraus eine
-    Voiceover-Audiodatei mit dem Edge-TTS-Tool.
+    Take the final script from create_shorts_script_task and create a
+    voiceover audio file from it using the TTS tool.
 
-    Anforderungen:
-    1. Entferne Regie- und Visual-Hinweise wie [Visual] aus dem zu sprechenden Text.
-    2. Erzeuge die Audio-Datei mit Stimme de-DE-FlorianMultilingualNeural.
-    3. Speichere die Ausgabe unter output/tts/youtube_short.mp3.
-    4. Gib als Ergebnis den finalen gesprochenen Text und den absoluten/relativen Dateipfad aus.
+    Requirements:
+    1. Remove stage directions and visual cues like [Visual] from the text to be spoken.
+    2. Generate the audio file.
+    3. Save the output under output/tts/youtube_short.mp3.
+    4. Output the final spoken text and the absolute/relative file path as the result.
   expected_output: >
-    Eine bestaetigte TTS-Erzeugung mit Dateipfad (output/tts/youtube_short.mp3)
-    und dem bereinigten Narrationstext.
+    A confirmed TTS generation with file path (output/tts/youtube_short.mp3)
+    and the cleaned narration text.
   agent: tts_narration_expert
   context: [create_shorts_script_task]
 
 generate_video_clips_task:
   description: >
-    Nimm das finale Skript aus create_shorts_script_task und extrahiere alle [VIDEO:]
-    Szenenbeschreibungen. Nutze außerdem die Bilddateien die von generate_scene_images_task generiert wurden. 
-    Die Bilder befinden sich physisch im Ordner 'output/scene_images'.
+    Take the final script from create_shorts_script_task and extract all [VIDEO:]
+    scene descriptions. Also use the image files generated by generate_scene_images_task. 
+    The images are physically located in the folder 'output/scene_images'. They have a png ending.
 
-    Rufe das Tool 'comfyui_tool' genau einmal auf und übergib:
-    - scene_descriptions: Scene description separiert mit Semicolons
-    - images_paths: Scene Bildpfade separiert mit Semicolons
+    Call the tool 'api_video_gen_tool' exactly once and pass:
+    - scene_descriptions: Scene descriptions separated by semicolons
+    - images_paths: Scene image paths separated by semicolons
 
-    Anforderungen:
-    1. Erzeuge pro Szene genau ein Video.
-    2. Speichere die Video unter output/comfyui/.
-    3. Erfinde keine Dateipfade.
-    4. Gib als Ergebnis eine geordnete Liste Szene -> Videopfade zurück.
+    Requirements:
+    1. Generate exactly one video per scene.
+    2. Save the videos under output/veo_videos/.
+    3. Do not invent file paths.
+    4. Return an ordered list mapping scene -> video paths as the result.
   expected_output: >
-    Eine bestaetigte Mapping-Liste aller Videos inkl. Dateipfaden in output/comfyui
+    A confirmed mapping list of all videos incl. file paths in output/veo_videos
   agent: video_production_assistant
   context: [create_shorts_script_task, generate_scene_images_task]
 
 fuse_video_task:
   description: >
-    Nimm den erzeugten Clip-Pfad aus generate_video_clips_task sowie die TTS-Ausgabe aus
-    create_tts_audio_task und erstelle daraus ein einziges finales MP4.
+    Take the generated clip path from generate_video_clips_task as well as the TTS output from
+    create_tts_audio_task and create a single final MP4 from them.
 
-    Anforderungen:
-    1. Verwende den generierten Clip-Pfad.
-    2. Verwende die erzeugte Audiodatei output/tts/youtube_short.mp3.
-    3. Nutze das Tool video_fusion_tool, um die Clips zu concat-en und mit Audio zu muxen.
-    4. Speichere das Ergebnis als output/final/youtube_short_final.mp4.
-    5. Gib den finalen Dateipfad als Ergebnis aus.
+    Requirements:
+    1. Use the generated clip path.
+    2. Use the generated audio file output/tts/youtube_short.mp3.
+    3. Use the video_fusion_tool tool to concat the clips and mux them with audio.
+    4. Save the result as output/final/youtube_short_final.mp4.
+    5. Output the final file path as the result.
 
-    Wichtig: Erfinde keine Dateipfade. Wenn Pfade fehlen, melde den Fehler klar.
+    Important: Do not invent file paths. If paths are missing, report the error clearly.
   expected_output: >
-    Eine bestaetigte finale MP4-Datei mit Pfad output/final/youtube_short_final.mp4.
+    A confirmed final MP4 file with path output/final/youtube_short_final.mp4.
   agent: fusion_agent
   context: [generate_video_clips_task, create_tts_audio_task]
 
 upload_youtube_video_task:
   description: >
-    Nimm das finale MP4 aus fuse_video_task und lade es auf YouTube hoch.
+    Take the final MP4 from fuse_video_task and upload it to YouTube.
 
-    Anforderungen:
-    1. Verwende das YouTube Data API Upload-Tool.
-    2. Nutze den finalen Videopfad aus der Fusion.
-    3. Vergib einen passenden Titel und eine kurze Beschreibung.
-    4. Gib die bestätigte YouTube-URL aus.
+    Requirements:
+    1. Use the YouTube Data API upload tool.
+    2. Use the final video path from the fusion process.
+    3. Assign a suitable title and a short description.
+    4. Output the confirmed YouTube URL.
   expected_output: >
-    Eine bestaetigte YouTube-Video-URL.
+    A confirmed YouTube video URL.
   agent: youtube_uploader_agent
   context: [fuse_video_task, create_shorts_script_task]

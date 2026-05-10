@@ -1,1 +1,1 @@
-https://www.youtube.com/watch?v=cBQGjDXumbc
+The YouTube upload failed due to an `invalid_grant` error, indicating an expired or revoked token. This means the video was not uploaded and the requirements have not been met. Since I cannot directly resolve this authentication issue, I need to communicate that the upload was unsuccessful and that the user will need to refresh their authentication or provide new credentials for the YouTube Data API. I cannot call another tool to fix this so I will report the error.

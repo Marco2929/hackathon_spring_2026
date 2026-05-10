@@ -151,7 +151,7 @@ class VideoFusionTool(BaseTool):
                     ensure_ascii=False,
                 )
 
-            repeat_count = max(1, int((target_per_clip / clip_duration) + 0.999))
+            repeat_count = max(1, round(target_per_clip / clip_duration))
             repeats_by_clip[str(clip)] = repeat_count
             for _ in range(repeat_count):
                 balanced_timeline.append(clip)
@@ -175,21 +175,19 @@ class VideoFusionTool(BaseTool):
         
         self._run_command(concat_command)
 
-        # 2. Schritt: Muxing mit Erzwingung der Synchronisation
-        # Wir nutzen -fflags +genpts, um kaputte Zeitstempel der KI-Videos zu reparieren
         mux_command = [
             "ffmpeg", "-y",
             "-fflags", "+genpts", 
             "-i", str(concatenated_temp),
             "-i", str(narration_path),
-            "-map", "0:v:0",        # Video von Input 0
-            "-map", "1:a:0",        # Audio von Input 1
-            "-c:v", "copy",         # Video weiterhin kopieren (schnell)
-            "-c:a", "aac",          # Audio neu kodieren (sicher)
+            "-map", "0:v:0",       
+            "-map", "1:a:0",       
+            "-c:v", "copy",   
+            "-c:a", "aac",          
             "-b:a", "192k",
-            "-ac", "2",             # Stereo erzwingen
-            "-ar", "44100",         # Standard Sampling Rate
-            "-af", "aresample=async=1", # Verhindert Audio-Drift
+            "-ac", "2",          
+            "-ar", "44100",     
+            "-af", "aresample=async=1", 
             "-t", f"{audio_duration:.3f}",
             "-movflags", "+faststart",
             str(output_file),

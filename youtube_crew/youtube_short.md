@@ -1,44 +1,19 @@
-Here's the script and image/video descriptions:
+00-03s: Did you know this iPad costs the same as some MacBooks?
+[SCENE:] A clean, photorealistic product shot of a black tablet lying flat on a wooden desk, studio lighting, 8k resolution, highly detailed, NO text, NO watermarks.
+[VIDEO:] product_image_01.jpg - Camera slowly zooms in on the tablet's screen, subtle light reflections move across the surface.
 
-**YouTube Shorts Script:**
+03-15s: Apple says their 13-inch M4 iPad Air redefines tablet performance. With the M4 chip, stunning Liquid Retina Display, Wi-Fi 7, and Apple Intelligence, it's designed for flawless multitasking, complex AI, and all-day battery life!
+[SCENE:] Four slim, modern tablets in light blue, gold, dark gray, and lavender on a minimalist white background, highlighting their sleek-minimalist design. NO text, NO watermarks.
+[VIDEO:] product_image_02.jpg - A subtle, smooth pan across the four tablets, transitioning from left to right.
 
-**(00-03s)**
-Hey, ist das Tablet dein nächster Fehlkauf? Lass uns das checken!
+15-45s: But what do users say? "Super zufrieden!" most exclaim, praising its "super immersive" display and "future-proof" performance. One user said it's "almost overkill" for daily tasks, yet surprisingly light. But here's the catch: the price. Many users admit, "it's expensive for what it is," especially with accessories. Another surprise? For some, even with the M4 chip, the "relation to what you pay to what you get could be better." They feel it’s still overpriced.
+[SCENE:] A person holding a sleek, dark-framed tablet (implied Apple iPad Air), with digital notes and drawings visible on the screen. The background is a modern, clean workspace. NO text, NO UI overlays.
+[VIDEO:] product_image_04.jpg - The tablet screen subtly brightens and dims as if being used, while the camera ever-so-slightly tilts down.
 
-**(03-15s)**
-Das Samsung Galaxy Tab A11+: 11 Zoll Display, 90 Hz, 128 GB Speicher, Top Performance! Und..3 Jahre Garantie!
+45-55s: So, is the 13-inch M4 iPad Air worth it? If you need top-tier performance for pro apps and love Apple's ecosystem, absolutely! But if you're on a budget and don't need M4 power, maybe hold off.
+[SCENE:] A sleek, silver tablet stands upright on a dark, reflective surface, next to a black Magic Keyboard attachment. Focus on the seamless connection. NO text, NO watermarks.
+[VIDEO:] product_image_05.jpg - A subtle glow emanates from the tablet screen, casting a soft reflection onto the surface below, then fading.
 
-**(15-45s)**
-Aber die echten User sagen: "Display top, Akku super!" ABER: Manche bemängeln die Kameraqualität und Software-Updates könnten schneller sein.
-
-**(45-55s)**
-Kaufen? Für den Preis: JA! Solides Tablet für Alltag und Medien.
-
-**(55-60s)**
-Samsung Galaxy Tab A11+: Qualität, die überzeugt. Also: Fehlkauf? Check!
-
-**Image & Video Descriptions:**
-
-**[SCENE: product_image_01.jpg]**
-Eine Nahaufnahme des Samsung Galaxy Tab A11+ in Grau, um das elegante Design und die hochwertigen Materialien zu betonen.
-
-**[VIDEO: product_image_01.jpg]**
-[0-5s] Der Fokus liegt auf dem Tablet, während sich das Bild leicht dreht, um die verschiedenen Winkel und die Haptik des Geräts zu zeigen.
-
-**[SCENE: product_image_02.jpg]**
-Zwei Tablets, die das schlanke Design und die Farbvarianten des Tablets zeigen: Silber und Dunkelgrau.
-
-**[VIDEO: product_image_02.jpg]**
-[0-5s] Zoome auf die Tablets und wechsele dynamisch zwischen den beiden, um die Unterschiede hervorzuheben.
-
-**[SCENE: product_image_06.jpg]**
-Das Tablet, auf dem ein Film läuft mit Soundwellen im Hintergrund.
-
-**[VIDEO: product_image_06.jpg]**
-[0-5s] Die Szene zeigt das Tablet aus verschiedenen Blickwinkeln und erzeugt dabei eine immersive Atmosphäre, die die Qualität der Lautsprecher hervorhebt.
-
-**[SCENE: product_image_04.jpg]**
-Das Tablet zeigt einen Produktkarton, um die Gesamtheit des Pakets zu verdeutlichen.
-
-**[VIDEO: product_image_04.jpg]**
-[0-5s] Langsame Drehung um das Paket, wobei die Komponenten des Tablets langsam eingeblendet werden.
+55-60s: Still wondering if an iPad can replace your laptop?
+[SCENE:] A clean, photorealistic product shot of a black tablet lying flat on a wooden desk, studio lighting, 8k resolution, highly detailed, NO text, NO watermarks.
+[VIDEO:] product_image_01.jpg - Camera slowly zooms out, revealing the entire tablet.

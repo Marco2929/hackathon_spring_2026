@@ -162,7 +162,7 @@ def main() -> int:
 	_load_env_file(Path(args.env_file))
 
 	video_path = Path(args.file).expanduser()
-	client_secrets_raw = args.client_secrets or os.getenv("YOUTUBE_CLIENT_SECRETS", "client_secret_899706342462-esmuel8evro677rhffh1le2b5jl6cf7n.apps.googleusercontent.com.json")
+	client_secrets_raw = args.client_secrets or os.getenv("YOUTUBE_CLIENT_SECRETS")
 	token_file_raw = args.token_file or os.getenv("YOUTUBE_TOKEN_FILE", "youtube_token.json")
 	client_secrets_path = Path(client_secrets_raw).expanduser()
 	token_file_path = Path(token_file_raw).expanduser()

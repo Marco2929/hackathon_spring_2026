@@ -54,10 +54,8 @@ class AmazonBestsellerScraperTool(BaseTool):
             conn.close()
             return True
         except sqlite3.IntegrityError:
-            # Greift, falls der Link aufgrund des UNIQUE Constraints abgelehnt wird
             return False
         except sqlite3.OperationalError as e:
-            # Wird geworfen, wenn die Tabelle 'product_links' nicht existiert
             raise RuntimeError(f"Datenbankfehler: {e} - Ist die Tabelle initialisiert?")
 
     def _run(

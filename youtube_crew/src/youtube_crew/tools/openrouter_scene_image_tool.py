@@ -13,7 +13,7 @@ import requests
 
 DEFAULT_OPENROUTER_IMAGE_MODEL = os.getenv(
     "OPENROUTER_IMAGE_MODEL",
-    "black-forest-labs/flux.2-klein-4b",
+    "black-forest-labs/flux.2-max",
 )
 DEFAULT_SCENE_IMAGE_OUTPUT_DIR = "output/scene_images"
 DEFAULT_SCENE_IMAGE_SIZE = "500x500"
