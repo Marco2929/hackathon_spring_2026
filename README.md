@@ -1,7 +1,7 @@
 # Agents YouTube Shorts Pipeline
 
 This repository automates a full product-to-video workflow for YouTube Shorts:
-
+(Branch max_setup includes the maximum version)
 1. Pull Amazon product links from a local queue.
 2. Scrape and structure product details and images.
 3. Analyze product images with vision.
